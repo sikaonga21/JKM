@@ -1,4 +1,4 @@
-import { Database, Download, Settings as SettingsIcon, Upload } from "lucide-react"
+import { Database, Download, LogOut, Settings as SettingsIcon, Upload } from "lucide-react"
 import type { Theme } from "@/types"
 import { Button } from "@/components/ui/button"
 import {
@@ -23,6 +23,7 @@ interface AppHeaderProps {
   onExportBackup: () => void
   onImportBackup: () => void
   onExportCsv: () => void
+  onSignOut: () => void
 }
 
 export function AppHeader({
@@ -35,6 +36,7 @@ export function AppHeader({
   onExportBackup,
   onImportBackup,
   onExportCsv,
+  onSignOut,
 }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/80 backdrop-blur-xl no-print">
@@ -81,6 +83,10 @@ export function AppHeader({
 
           <Separator orientation="vertical" className="mx-1 h-6" />
           <ThemeToggle theme={theme} resolved={resolvedTheme} onChange={onThemeChange} />
+          <Button variant="ghost" size="sm" className="gap-2" onClick={onSignOut} title="Sign out">
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Sign out</span>
+          </Button>
         </div>
       </div>
     </header>

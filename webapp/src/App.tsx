@@ -1,7 +1,8 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Toaster, toast } from "sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AppHeader } from "@/components/layout/AppHeader"
+import { TeamLogin } from "@/components/auth/TeamLogin"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { Dashboard } from "@/features/dashboard/Dashboard"
 import { Editor } from "@/features/editor/Editor"
@@ -15,6 +16,60 @@ import { formatDate, toISODate } from "@/lib/format"
 import type { Quotation } from "@/types"
 
 export default function App() {
+  const [authenticated, setAuthenticated] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
+  const [authError, setAuthError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/auth")
+      .then(async (response) => {
+        const result = (await response.json()) as { authenticated?: boolean; error?: string }
+        if (!response.ok) throw new Error(result.error ?? "Could not verify the team session.")
+        if (!cancelled) setAuthenticated(result.authenticated === true)
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setAuthError(error instanceof Error ? error.message : "Could not connect to the sign-in service.")
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setCheckingSession(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const signIn = useCallback(async (password: string) => {
+    setAuthError(null)
+    try {
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      })
+      const result = (await response.json()) as { error?: string }
+      if (!response.ok) throw new Error(result.error ?? "Sign in failed.")
+      setAuthenticated(true)
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Could not connect to the sign-in service.")
+    }
+  }, [])
+
+  const signOut = useCallback(async () => {
+    await fetch("/api/auth", { method: "DELETE" }).catch(() => undefined)
+    setAuthenticated(false)
+  }, [])
+
+  if (checkingSession) {
+    return <main className="app-canvas grid min-h-screen place-items-center text-sm text-muted-foreground">Checking secure session…</main>
+  }
+  if (!authenticated) return <TeamLogin error={authError} onSubmit={signIn} />
+  return <Workspace onSignOut={signOut} />
+}
+
+function Workspace({ onSignOut }: { onSignOut: () => void }) {
   const store = useStore()
   const { theme, resolved, setTheme } = useTheme()
 
@@ -111,6 +166,11 @@ export default function App() {
   return (
     <TooltipProvider delayDuration={300}>
       <div className="app-canvas min-h-screen">
+        {store.loading && (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-background/90 text-sm text-muted-foreground">
+            Loading shared company data…
+          </div>
+        )}
         <AppHeader
           companyName={store.settings.company.name}
           logo={store.settings.company.logo}
@@ -121,11 +181,17 @@ export default function App() {
           onExportBackup={exportBackup}
           onImportBackup={() => importRef.current?.click()}
           onExportCsv={exportCsv}
+          onSignOut={onSignOut}
         />
 
+        {store.syncError && (
+          <div className="border-b border-warning/30 bg-warning/10 px-4 py-2 text-center text-xs text-warning no-print">
+            Cloud sync is unavailable. Changes may only be saved in this browser; export a backup before closing the tab.
+          </div>
+        )}
         {store.storageError && (
           <div className="border-b border-warning/30 bg-warning/10 px-4 py-2 text-center text-xs text-warning no-print">
-            This browser is not saving changes — storage is full or blocked. Export a backup before closing the tab.
+            This browser could not save its local backup. Export a backup before closing the tab.
           </div>
         )}
 
@@ -171,7 +237,7 @@ export default function App() {
           open={pendingDelete !== null}
           onOpenChange={(open) => !open && setPendingDelete(null)}
           title="Delete this document?"
-          description={`${pendingDelete?.number ?? ""} for ${pendingDelete?.client.name || "an unnamed client"} will be permanently removed from this browser. This cannot be undone.`}
+          description={`${pendingDelete?.number ?? ""} for ${pendingDelete?.client.name || "an unnamed client"} will be permanently removed from shared company records. This cannot be undone.`}
           confirmLabel="Delete"
           destructive
           onConfirm={confirmDelete}

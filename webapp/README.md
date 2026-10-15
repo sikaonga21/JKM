@@ -2,8 +2,7 @@
 
 A quotation, proforma and invoice builder. Documents are written on an A4 sheet
 you can see while you type, and exported as a multi-page PDF or printed
-directly. Everything is stored in the browser — there is no server and no
-account.
+directly. Signed-in team members share company data stored in Neon Postgres.
 
 ```bash
 npm install
@@ -12,8 +11,8 @@ npm run dev      # http://localhost:5173
 
 | Script             | What it does                                 |
 | ------------------ | -------------------------------------------- |
-| `npm run dev`      | Dev server with hot reload                   |
-| `npm run build`    | Typecheck, then a production build in `dist` |
+| `npm run dev`      | Vite dev server with hot reload              |
+| `npm run build`    | Typecheck API and app, then build in `dist`  |
 | `npm run preview`  | Serve the production build locally           |
 | `npm test`         | Run the unit tests once                      |
 | `npm run test:watch` | Re-run tests as files change               |
@@ -69,14 +68,36 @@ Two rules keep the rest honest:
 
 ## Storage
 
-Documents live in `localStorage` under `jkm.quotations.v2`, settings under
-`jkm.settings.v1`. Documents written by the first version of the app (the flat
-`jkm_quotations` key) are read and migrated on load — see `normalizeQuotation`.
+The shared quotation records and company settings live in Neon Postgres behind
+Vercel API routes. On the first sign-in, if the database is empty, the current
+browser's local data is copied into the database. Later sign-ins load the shared
+database as the source of truth. `localStorage` remains as a local backup and
+supports the original `jkm_quotations` format through `normalizeQuotation`.
 
-This means **the data is tied to one browser on one device.** Clearing site data
-deletes it. Use *Data → Export backup* regularly; the import merges by document
-id, so restoring a backup never duplicates what is already there. If the browser
-refuses to save (private mode, full storage), a banner appears under the header.
+All staff use one shared team password. Use a long random password and keep
+`SESSION_SECRET` private. Team members share records; individual accounts and
+per-person audit history are not provided. Use *Data → Export backup* regularly;
+the import merges by document id. A warning appears if cloud sync or the browser
+backup is unavailable.
+
+## Vercel setup
+
+Set the Vercel project's **Root Directory** to `webapp`, then add these
+environment variables for Production (and Preview if needed):
+
+- `DATABASE_URL`: the Neon Postgres connection string. If the integration uses
+  another variable name, add `DATABASE_URL` with the same connection string.
+- `APP_PASSWORD`: a long, random password shared only with staff.
+- `SESSION_SECRET`: at least 32 random characters, used to sign seven-day
+  HTTP-only session cookies.
+
+Redeploy after adding the variables. The API creates its two tables on first
+use. Never add the database URL or team password to a `VITE_` variable or commit
+real secrets. The example variable names are in `.env.example`.
+
+For local end-to-end development, link the project with Vercel CLI, place local
+values in `.env.local`, and run `npx vercel dev` so the `/api` functions are
+available alongside Vite.
 
 ## Tax
 
