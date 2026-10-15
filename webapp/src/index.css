@@ -1,0 +1,195 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Neutrals ------------------------------------------------------- */
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;
+    --surface: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --muted: 220 16% 95%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 16% 95%;
+    --accent-foreground: 222 47% 11%;
+    --border: 220 16% 90%;
+    --input: 220 16% 88%;
+
+    /* Brand — a confident utility blue ------------------------------- */
+    --brand-50: 214 100% 97%;
+    --brand-100: 214 95% 93%;
+    --brand-200: 213 97% 87%;
+    --brand-500: 217 91% 60%;
+    --brand-600: 221 83% 53%;
+    --brand-700: 224 76% 45%;
+    --brand-900: 226 57% 29%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 16% 95%;
+    --secondary-foreground: 222 47% 11%;
+    --ring: 221 83% 53%;
+
+    /* Semantics ------------------------------------------------------ */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 69% 31%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 44%;
+    --warning-foreground: 0 0% 100%;
+
+    --shadow-color: 222 47% 25%;
+    --radius: 0.625rem;
+  }
+
+  .dark {
+    --background: 224 36% 7%;
+    --foreground: 210 40% 98%;
+    --surface: 223 32% 11%;
+    --card: 223 32% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 223 32% 11%;
+    --popover-foreground: 210 40% 98%;
+    --muted: 223 25% 17%;
+    --muted-foreground: 218 14% 65%;
+    --accent: 223 25% 18%;
+    --accent-foreground: 210 40% 98%;
+    --border: 223 22% 20%;
+    --input: 223 22% 24%;
+
+    --brand-50: 226 57% 16%;
+    --brand-100: 226 55% 22%;
+    --brand-200: 224 60% 30%;
+    --brand-500: 217 91% 64%;
+    --brand-600: 217 91% 60%;
+    --brand-700: 213 97% 72%;
+    --brand-900: 214 95% 88%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 224 44% 9%;
+    --secondary: 223 25% 18%;
+    --secondary-foreground: 210 40% 98%;
+    --ring: 217 91% 60%;
+
+    --destructive: 0 72% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 58% 46%;
+    --success-foreground: 150 60% 8%;
+    --warning: 38 92% 58%;
+    --warning-foreground: 32 90% 10%;
+
+    --shadow-color: 224 60% 2%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+  }
+
+  /* Money and counters never jitter while typing. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Strip the spinner from numeric inputs — qty/price use their own steppers. */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-900;
+  }
+}
+
+@layer components {
+  /* Subtle page wash behind the app chrome. */
+  .app-canvas {
+    background-image:
+      radial-gradient(60rem 40rem at 110% -10%, hsl(var(--brand-500) / 0.10), transparent 60%),
+      radial-gradient(44rem 30rem at -10% 0%, hsl(var(--brand-500) / 0.07), transparent 55%);
+  }
+
+  /* The A4 sheet in the live preview. */
+  .paper {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 14mm 14mm 12mm;
+    background: #fff;
+    color: #0f172a;
+  }
+
+  .field-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground;
+  }
+
+  .scrollbar-slim {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-slim::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .scrollbar-slim::-webkit-scrollbar-thumb {
+    @apply rounded-full border-4 border-solid border-transparent bg-border bg-clip-content;
+  }
+}
+
+/* The capture sheet -------------------------------------------------
+   One always-rendered, full-size copy of the document lives off-screen in a
+   portal on <body>. The PDF exporter captures it and printing promotes it to
+   the page, so neither depends on which pane happens to be visible. */
+.capture-host {
+  position: fixed;
+  top: 0;
+  left: -300vw;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Printing prints the sheet, and nothing else. ---------------------- */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  body > *:not(.capture-host) {
+    display: none !important;
+  }
+
+  .capture-host {
+    position: static !important;
+    z-index: auto !important;
+    pointer-events: auto !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
