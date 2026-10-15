@@ -1,9 +1,10 @@
 import { fileURLToPath } from "node:url"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
+import { devApi } from "./vite-plugin-api.ts"
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), devApi()],
   resolve: {
     alias: {
       // fileURLToPath, not URL.pathname — the project path contains spaces.

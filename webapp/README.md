@@ -11,7 +11,7 @@ npm run dev      # http://localhost:5173
 
 | Script             | What it does                                 |
 | ------------------ | -------------------------------------------- |
-| `npm run dev`      | Vite dev server with hot reload              |
+| `npm run dev`      | Vite dev server, `/api` included, hot reload |
 | `npm run build`    | Typecheck API and app, then build in `dist`  |
 | `npm run preview`  | Serve the production build locally           |
 | `npm test`         | Run the unit tests once                      |
@@ -95,9 +95,13 @@ Redeploy after adding the variables. The API creates its two tables on first
 use. Never add the database URL or team password to a `VITE_` variable or commit
 real secrets. The example variable names are in `.env.example`.
 
-For local end-to-end development, link the project with Vercel CLI, place local
-values in `.env.local`, and run `npx vercel dev` so the `/api` functions are
-available alongside Vite.
+For local end-to-end development, copy `.env.example` to `.env.local` and fill
+in the three values. `npm run dev` serves the `/api` functions itself - the
+`devApi` plugin in `vite-plugin-api.ts` mounts the same handlers Vercel runs,
+reading the same `process.env` names - so the sign-in and cloud sync work
+against your local values. Without `.env.local`, the API answers `503 Team
+login is not configured.` rather than failing with a parse error. `npx vercel
+dev` still works if you would rather run the real Vercel runtime.
 
 ## Tax
 
