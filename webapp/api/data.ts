@@ -1,5 +1,5 @@
-import { ensureDatabaseSchema, getDatabase } from "../server/database"
-import { hasSameOrigin, requestHasSession } from "../server/session"
+import { ensureDatabaseSchema, getDatabase } from "../server/database.js"
+import { hasSameOrigin, requestHasSession } from "../server/session.js"
 
 type RecordValue = Record<string, unknown>
 

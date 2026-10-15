@@ -5,7 +5,7 @@ import {
   passwordIsValid,
   requestHasSession,
   sessionIsConfigured,
-} from "../server/session"
+} from "../server/session.js"
 
 export function GET(request: Request): Response {
   if (!sessionIsConfigured()) {
