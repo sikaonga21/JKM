@@ -1,4 +1,13 @@
 {
+  /* Vercel type-checks the /api functions with the compilerOptions it finds in
+     this file, so they live here as well as in tsconfig.api.json. */
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true
+  },
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

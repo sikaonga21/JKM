@@ -46,8 +46,8 @@ export async function PUT(request: Request): Promise<Response> {
   }
   if (!isRecord(body)) return Response.json({ error: "Invalid data." }, { status: 400 })
 
-  const hasSettings = Object.hasOwn(body, "settings")
-  const hasQuotations = Object.hasOwn(body, "quotations")
+  const hasSettings = "settings" in body
+  const hasQuotations = "quotations" in body
   if (hasSettings && !isRecord(body.settings)) {
     return Response.json({ error: "Invalid settings." }, { status: 400 })
   }

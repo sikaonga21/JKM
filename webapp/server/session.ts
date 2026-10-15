@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto"
 
 const COOKIE_NAME = "jkm_session"

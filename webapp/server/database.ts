@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { neon } from "@neondatabase/serverless"
 
 export function getDatabase() {
